@@ -15,21 +15,19 @@ int main()
     int num2;
     cin >> num2;
     if (num2 < lowest)
+        middle = lowest;
         lowest = num2;
     if (num2 > largest)
         largest = num2;
-    if (num2 >= lowest && num2 <= largest)
-        middle = num2;
 
     cout << "Enter number 3:\n";
     int num3;
     cin >> num3;
     if (num3 < lowest)
+        middle = lowest;
         lowest = num3;
     if (num3 > largest)
         largest = num3;
-    if (num3 >= lowest && num3 <= largest)
-        middle = num3;
 
     cout << to_string(lowest) << ", " << to_string(middle) << ", " 
         << to_string(largest) << "\n";
