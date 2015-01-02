@@ -1,4 +1,5 @@
-/* permute_combine.cpp
+/**
+ * permute_combine.cpp
  *
  * <Author> Patrick Rummage
  *
@@ -10,25 +11,30 @@
  *      Combination formula: C(a, b) = P(a, b) / b!
  */
 #include "../std_lib_facilities.h"
+#include <limits.h>
 
 int factorial(int val)
 {
     int fact = 1;
-    for(int i = val; i >= 1; --i)
+    for (int i = val; i >= 1; --i) {
+        if (fact > INT_MAX / i) //Next assignment would cause overflow
+            error("int overflow in factorial function");
         fact *= i;
-
+    }
     return fact;
 }
 
-/*The denominator in the formula cancels out factorial iterations after a-b times.
+/* The denominator in the formula cancels out factorial iterations after a-b times.
  * EX: P(9,4) = (9*8*7*6*5*4*3*2*1) / (5*4*3*2*1)
  *                      = (9*8*7*6)
  */
 int permutations(int a, int b)
 {
     int p = a;
-    for(int i = 1; i < b; ++i) {
+    for (int i = 1; i < b; ++i) {
         a -= 1;
+        if (p > INT_MAX / a) //Next assignment would cause overflow
+            error("int overflow in permutations function");
         p *= a;
     }
     return p;
@@ -61,6 +67,5 @@ int main()
         default:
             cout << "Invalid operation: " << mode << "\n";
     }
-
     return 0;
 }
