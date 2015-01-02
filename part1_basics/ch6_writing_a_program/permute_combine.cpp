@@ -14,12 +14,8 @@
 int factorial(int val)
 {
     int fact = 1;
-    if (val == 0) return fact;
-    
-    else {
-        for(int i = val; i >= 1; --i)
-            fact *= i;
-    }
+    for(int i = val; i >= 1; --i)
+        fact *= i;
 
     return fact;
 }
@@ -45,6 +41,9 @@ int main()
     int val1, val2;
     char mode;
     cin >> val1 >> val2 >> mode;
+    
+    if (val1 <= 0 || val2 <= 0) 
+        error("Values must be positive and non-zero");
 
     switch(mode) {
         case 'p': case 'P':
