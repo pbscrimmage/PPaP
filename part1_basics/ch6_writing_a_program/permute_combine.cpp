@@ -7,8 +7,8 @@
  *      Write a program that asks the user for two numbers, asks whether 
  *      they want to calculate permutations or combinations, and prints out 
  *      the result.
- *      Permutation formula: P(a, b) = a! / (a - b)!
- *      Combination formula: C(a, b) = P(a, b) / b!
+ *      Permutations formula: P(a, b) = a! / (a - b)!
+ *      Combinations formula: C(a, b) = P(a, b) / b!
  */
 #include "../std_lib_facilities.h"
 #include <limits.h>
