@@ -2,11 +2,6 @@
  * expr_calculator.cpp
  *
  * A simple calculator
- *
- * Revised by Bjarne Stroustrup November 2013
- * Revised by Bjarne Stroustrup May 2007
- * Revised by Bjarne Stroustrup August 2006
- * Revised by Bjarne Stroustrup August 2004
  * Origininally written by Bjarne Stroustrup
  *      (bs@cs.tamu.edu) Spring 2004
  *
@@ -46,17 +41,7 @@
  *      -support for bracketed expressions { }
  */
 
-#include "../std_lib_facilities.h"
-
-const char number = '8'; //t.kind==number means t is a number token
-const char quit = 'q';   //t.kind==quit means t is a quit token
-const char print = ';';  //t.kind==print means t is a print token
-const string prompt = ">";
-const string result = "="; //Indicates that what follows is a result
-const char name = 'a';  //name Token
-const char let = 'L';   //Declaration Token
-const string declkey = "let";   //Declaration keyword
-//------------------------------------------------------------------------------
+#include "PPaP/part1_basics/std_lib_facilities.h"
 
 class Token {
 public:
@@ -64,16 +49,17 @@ public:
     double value;     // for numbers: a value 
     string name;      // for variables
     Token(char ch)    // make a Token from a char
-        :kind{ch} {}    
+        :kind(ch) { }    
     Token(char ch, double val)     // make a Token from a char and a double
-        :kind{ch}, value{val} {}
+        :kind(ch), value(val) { }
     Token(char ch, string n)       // make a Token from a char and var name
-        :kind{ch}, name{n} {} 
+        :kind(ch), name(n) { } 
 };
 
 class Token_stream {
 public: 
-    Token_stream();   // make a Token_stream that reads from cin
+    Token_stream()    // make a Token_stream that reads from cin
+        :full(false), buffer(0) { } //initialize with empty buffer
     Token get();      // get a Token (get() is defined elsewhere)
     void putback(Token t);    // put a Token back
     void ignore(char c);     //discard characters up to and including a c
@@ -81,6 +67,89 @@ private:
     bool full;        // is there a Token in the buffer?
     Token buffer;     // here is where we keep a Token put back using putback()
 };
+
+const char quit = 'q';   //t.kind==quit means t is a quit token
+const char print = ';';  //t.kind==print means t is a print token
+const char let = 'L';   //Declaration Token
+const char number = '8'; //t.kind==number means t is a number token
+const char name = 'a';  //name Token
+
+Token Token_stream::get()
+    //Read chars from cin and compose a Token
+{
+    if (full) {       // do we already have a Token ready?
+        // remove token from buffer
+        full=false;
+        return buffer;
+    } 
+
+    char ch;
+    cin >> ch;    // note that >> skips whitespace (space, newline, tab, etc.)
+
+    switch (ch) {
+    case print:
+    case quit:
+    case '{': 
+    case '}': 
+    case '(': 
+    case ')': 
+    case '+':
+    case '-': 
+    case '*': 
+    case '/': 
+    case '%': 
+    case '!':
+    case '=':
+        return Token(ch);        // let each character represent itself
+    case '.':               //floating-point literals can start with '.'
+    case '0': case '1': case '2': case '3': case '4':
+    case '5': case '6': case '7': case '8': case '9':
+        {    
+            cin.putback(ch);         // put digit back into the input stream
+            double val;
+            cin >> val;              // read a floating-point number
+            return Token(number,val);
+        }
+    default:
+        if (isalpha(ch)) {
+            string s;
+            s += ch;
+            while (cin.get(ch) && (isalpha(ch) || isdigit(ch)))
+                s += ch;
+            cin.putback(ch);
+            if (s == declkey)   //Declaration keyword
+                return Token(let);
+            return Token(name, s);
+        }
+        error("Bad token ", ch); 
+    }//End switch
+}
+
+void Token_stream::putback(Token t)
+    // The putback() member function puts its argument back into the Token_stream's buffer:
+{
+    if (full) error("putback() into a full buffer");
+    buffer = t;       // copy t to buffer
+    full = true;      // buffer is now full
+}
+
+void Token_stream::ignore(char c)
+    //c represents the kind of Token
+{
+    //first look in the buffer
+    if (full && c == buffer.kind) {
+        full = false;
+        return;
+    }
+    full = false;
+
+    // now search input
+    char ch;
+    while (cin >> ch) {
+        if (ch == c)
+            return;
+    }
+}
 
 struct Variable {
     string name;
@@ -131,99 +200,13 @@ void set_value(string s, double d)
     }
     error("set: undefined variable", s);
 }
-//------------------------------------------------------------------------------
-
-// The constructor just sets full to indicate that the buffer is empty:
-Token_stream::Token_stream()
-:full(false), buffer(0)    // no Token in buffer
-{
-}
-
-
-// The putback() member function puts its argument back into the Token_stream's buffer:
-void Token_stream::putback(Token t)
-{
-    if (full) error("putback() into a full buffer");
-    buffer = t;       // copy t to buffer
-    full = true;      // buffer is now full
-}
-
-void Token_stream::ignore(char c)
-    //c represents the kind of Token
-{
-    //first look in the buffer
-    if (full && c == buffer.kind) {
-        full = false;
-        return;
-    }
-    full = false;
-
-    // now search input
-    char ch;
-    while (cin >> ch) {
-        if (ch == c)
-            return;
-    }
-}
-/*Read chars from cin and compose a Token*/
-Token Token_stream::get()
-{
-    if (full) {       // do we already have a Token ready?
-        // remove token from buffer
-        full=false;
-        return buffer;
-    } 
-
-    char ch;
-    cin >> ch;    // note that >> skips whitespace (space, newline, tab, etc.)
-
-    switch (ch) {
-    case print:
-    case quit:
-    case '{': 
-    case '}': 
-    case '(': 
-    case ')': 
-    case '+':
-    case '-': 
-    case '*': 
-    case '/': 
-    case '%': 
-    case '!':
-    case '=':
-        return Token(ch);        // let each character represent itself
-    case '.':               //floating-point literals can start with '.'
-    case '0': case '1': case '2': case '3': case '4':
-    case '5': case '6': case '7': case '8': case '9':
-        {    
-            cin.putback(ch);         // put digit back into the input stream
-            double val;
-            cin >> val;              // read a floating-point number
-            return Token(number,val);
-        }
-    default:
-        if (isalpha(ch)) {
-            string s;
-            s += ch;
-            while (cin.get(ch) && (isalpha(ch) || isdigit(ch)))
-                s += ch;
-            cin.putback(ch);
-            if (s == declkey)   //Declaration keyword
-                return Token(let);
-            return Token(name, s);
-        }
-        error("Bad token ", ch); 
-    }//End switch
-}
 
 Token_stream ts;        // provides get() and putback() 
 
-//------------------------------------------------------------------------------
-
 double expression();    // declaration so that primary() can call expression()
 
-// deal with numbers, parentheses, and brackets
 double primary()
+    // deal with numbers, parentheses, and brackets
 {
     Token t = ts.get();
     switch (t.kind) {
@@ -255,6 +238,7 @@ double primary()
 }
 
 double factorial()
+    //find and calculate factorials
 {
     double left = primary();
     Token t = ts.get();
@@ -282,8 +266,8 @@ double factorial()
     }//end while
 }
 
-// deal with *, /, and %
 double term()
+    // deal with *, /, and %
 {
     double left = factorial();
     Token t = ts.get();        // get the next token from token stream
@@ -319,8 +303,8 @@ double term()
     }
 }
 
-// deal with + and -
 double expression()
+    // deal with + and -
 {
     double left = term();      // read and evaluate a Term
     Token t = ts.get();        // get the next token from token stream
@@ -343,7 +327,7 @@ double expression()
 }
 
 double declaration()
-    //Handle name = expression
+    //Handle 'name = expression'
     //Declare a variable called "name" with initial value "expresion"
 {
     Token t = ts.get();
@@ -362,6 +346,7 @@ double declaration()
 }
 
 double statement()
+    //Handle 'let' keyword
 {
     Token t = ts.get();
     switch(t.kind) {
@@ -372,15 +357,19 @@ double statement()
             return expression();
     }
 }
-//------------------------------------------------------------------------------
+
 void clean_up_mess()
     //clear bad input from Token stream
 {
     ts.ignore(print);
 }
 
-/*Expression evaluation loop*/
+const string prompt = ">";
+const string result = "="; //Indicates that what follows is a result
+const string declkey = "let";   //Declaration keyword
+
 void calculate()
+    /*Expression evaluation loop*/
 {   
     while (cin) {
         try {
