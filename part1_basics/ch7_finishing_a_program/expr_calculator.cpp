@@ -39,9 +39,10 @@
  * Additional functionality added as exercises by Patrick Rummage
  *      -support for the factorial operator !
  *      -support for bracketed expressions { }
+ *      -allow underscores in variable names
  */
 
-#include "PPaP/part1_basics/std_lib_facilities.h"
+#include "../std_lib_facilities.h"
 
 class Token {
 public:
@@ -73,6 +74,7 @@ const char print = ';';  //t.kind==print means t is a print token
 const char let = 'L';   //Declaration Token
 const char number = '8'; //t.kind==number means t is a number token
 const char name = 'a';  //name Token
+const string declkey = "let";   //Declaration keyword
 
 Token Token_stream::get()
     //Read chars from cin and compose a Token
@@ -114,7 +116,7 @@ Token Token_stream::get()
         if (isalpha(ch)) {
             string s;
             s += ch;
-            while (cin.get(ch) && (isalpha(ch) || isdigit(ch)))
+            while (cin.get(ch) && (isalpha(ch) || isdigit(ch) || ch == '_'))
                 s += ch;
             cin.putback(ch);
             if (s == declkey)   //Declaration keyword
@@ -364,9 +366,8 @@ void clean_up_mess()
     ts.ignore(print);
 }
 
-const string prompt = ">";
-const string result = "="; //Indicates that what follows is a result
-const string declkey = "let";   //Declaration keyword
+const string prompt = "> ";
+const string result = "= "; //Indicates that what follows is a result
 
 void calculate()
     /*Expression evaluation loop*/
