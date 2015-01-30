@@ -67,18 +67,20 @@ public:
     Token get();      // get a Token (get() is defined elsewhere)
     void putback(Token t);    // put a Token back
     void ignore(char c);     //discard characters up to and including a c
+    void reset();
 private:
     bool full;        // is there a Token in the buffer?
     Token buffer;     // here is where we keep a Token put back using putback()
 };
 
 const char quit = 'q';   //t.kind==quit means t is a quit token
-const char print = ';';  //t.kind==print means t is a print token
+const char space = ' ';  //space Token
+const char print = '\n';  //t.kind==print means t is a print token
 const char number = '8'; //t.kind==number means t is a number token
 const char name = 'a';  //name Token
 const char let = 'L';   //Declaration Token
 const char root = 'S';  //Sqrt Token
-const char exponent = 'E';
+const char exponent = 'E'; //pow() Token
 const string declkey = "let";   //Declaration keyword
 const string sqrtkey = "sqrt";  //Sqrt() keyword
 const string expkey = "pow";    //pow() keyword
@@ -93,10 +95,11 @@ Token Token_stream::get()
     } 
 
     char ch;
-    cin >> ch;    // note that >> skips whitespace (space, newline, tab, etc.)
+    ch = cin.get();    // note that >> skips whitespace (space, newline, tab, etc.)
+    while (ch == ' ')
+        ch = cin.get();
 
     switch (ch) {
-    case print:
     case quit:
     case '{': 
     case '}': 
@@ -121,6 +124,10 @@ Token Token_stream::get()
             return Token(number,val);
         }
     default:
+        if (isspace(ch)) {
+            if (ch == print)
+                return Token(print);
+        }
         if (isalpha(ch)) {
             string s;
             s += ch;
@@ -164,6 +171,12 @@ void Token_stream::ignore(char c)
         if (ch == c)
             return;
     }
+}
+
+void Token_stream::reset()
+{
+    full = false;
+    return;
 }
 
 struct Variable {
@@ -264,8 +277,7 @@ double primary()
                 return 1;
             double result = d;
             if (exp > 0) {  //Positive exponent
-                cout << "if\n";
-                for (int i = 1; i <= exp; ++i) {
+                for (int i = 1; i < exp; ++i) {
                     result *= d;
                 }
             } else if (exp < 0) {  //Negative exponent
@@ -427,7 +439,7 @@ double statement()
 void clean_up_mess()
     //clear bad input from Token stream
 {
-    ts.ignore(print);
+    ts.reset();
 }
 
 const string prompt = "> ";
