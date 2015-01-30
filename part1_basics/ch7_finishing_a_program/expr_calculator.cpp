@@ -41,6 +41,7 @@
  *      -support for bracketed expressions { }
  *      -allow underscores in variable names
  *      -create Symbol_table class to store variables
+ *      -support for sqrt() function
  */
 
 #include "../std_lib_facilities.h"
@@ -72,10 +73,12 @@ private:
 
 const char quit = 'q';   //t.kind==quit means t is a quit token
 const char print = ';';  //t.kind==print means t is a print token
-const char let = 'L';   //Declaration Token
 const char number = '8'; //t.kind==number means t is a number token
 const char name = 'a';  //name Token
+const char let = 'L';   //Declaration Token
+const char root = 'S';  //Sqrt Token
 const string declkey = "let";   //Declaration keyword
+const string sqrtkey = "sqrt";  //Sqrt keyword
 
 Token Token_stream::get()
     //Read chars from cin and compose a Token
@@ -120,8 +123,11 @@ Token Token_stream::get()
             while (cin.get(ch) && (isalpha(ch) || isdigit(ch) || ch == '_'))
                 s += ch;
             cin.putback(ch);
-            if (s == declkey)   //Declaration keyword
+            if (s == declkey) {  //Declaration keyword
                 return Token(let);
+            } else if (s == sqrtkey) { //Sqrt keyword
+                return Token(root);
+            }
             return Token(name, s);
         }
         error("Bad token ", ch); 
@@ -218,10 +224,19 @@ Symbol_table symtable;  // provides get() set() and declare()
 double expression();    // declaration so that primary() can call expression()
 
 double primary()
-    // deal with numbers, parentheses, and brackets
+    // deal with numbers, square roots,  parentheses, and brackets
 {
     Token t = ts.get();
     switch (t.kind) {
+    case root:
+        {
+            t = ts.get();
+            if (t.kind != '(') error("'(' expected");
+            double d = expression();
+            t = ts.get();
+            if (t.kind != ')') error ("')' expected");
+            return sqrt(d);
+        }
     case '{':           // handle '{' expression '}'
         {
             double d = expression();
