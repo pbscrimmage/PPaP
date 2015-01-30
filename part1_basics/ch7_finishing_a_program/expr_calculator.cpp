@@ -42,6 +42,7 @@
  *      -allow underscores in variable names
  *      -create Symbol_table class to store variables
  *      -support for sqrt() function
+ *      -support for pow() function
  */
 
 #include "../std_lib_facilities.h"
@@ -77,8 +78,10 @@ const char number = '8'; //t.kind==number means t is a number token
 const char name = 'a';  //name Token
 const char let = 'L';   //Declaration Token
 const char root = 'S';  //Sqrt Token
+const char exponent = 'E';
 const string declkey = "let";   //Declaration keyword
-const string sqrtkey = "sqrt";  //Sqrt keyword
+const string sqrtkey = "sqrt";  //Sqrt() keyword
+const string expkey = "pow";    //pow() keyword
 
 Token Token_stream::get()
     //Read chars from cin and compose a Token
@@ -106,6 +109,7 @@ Token Token_stream::get()
     case '%': 
     case '!':
     case '=':
+    case ',':
         return Token(ch);        // let each character represent itself
     case '.':               //floating-point literals can start with '.'
     case '0': case '1': case '2': case '3': case '4':
@@ -125,8 +129,10 @@ Token Token_stream::get()
             cin.putback(ch);
             if (s == declkey) {  //Declaration keyword
                 return Token(let);
-            } else if (s == sqrtkey) { //Sqrt keyword
+            } else if (s == sqrtkey) { //Sqrt() keyword
                 return Token(root);
+            } else if (s == expkey) {  //pow() keyword
+                return Token(exponent);
             }
             return Token(name, s);
         }
@@ -224,31 +230,65 @@ Symbol_table symtable;  // provides get() set() and declare()
 double expression();    // declaration so that primary() can call expression()
 
 double primary()
-    // deal with numbers, square roots,  parentheses, and brackets
+    // deal with numbers, square roots, exponents, parentheses, and brackets
 {
     Token t = ts.get();
     switch (t.kind) {
     case root:
         {
             t = ts.get();
-            if (t.kind != '(') error("'(' expected");
+            if (t.kind != '(') 
+                error("'(' expected");
+            double d = expression();
+            if (d < 0) 
+                error ("negative argument for sqrt()");
+            t = ts.get();
+            if (t.kind != ')') 
+                error ("')' expected");
+            return sqrt(d);
+        }
+    case exponent:
+        {
+            t = ts.get();
+            if (t.kind != '(')
+                error("'(' expected");
             double d = expression();
             t = ts.get();
-            if (t.kind != ')') error ("')' expected");
-            return sqrt(d);
+            if (t.kind != ',')
+                error("expected two arguments for pow()");
+            int exp = narrow_cast<int>(expression());
+            t = ts.get();
+            if (t.kind != ')')
+                error("')'expected");
+            if (exp == 0)   //Exponent is zero
+                return 1;
+            double result = d;
+            if (exp > 0) {  //Positive exponent
+                cout << "if\n";
+                for (int i = 1; i <= exp; ++i) {
+                    result *= d;
+                }
+            } else if (exp < 0) {  //Negative exponent
+                for (int i = exp; i <= -1; ++i) {
+                    result /= d;
+                }
+            }
+            return result;
         }
     case '{':           // handle '{' expression '}'
         {
             double d = expression();
             t = ts.get();
-            if (t.kind != '}') error("'}' expected");
+            if (t.kind != '}') 
+                error("'}' expected");
             return d;
         }
     case '(':            // handle '(' expression ')'
         {    
             double d = expression();
             t = ts.get();
-            if (t.kind != ')') error("')' expected");
+            if (t.kind != ')') 
+                error("')' expected");
             return d;
         }
     case number:            // we use '8' to represent a number
@@ -308,7 +348,8 @@ double term()
         case '/':
         {    
             double d = factorial();
-            if (d == 0) error("divide by zero");
+            if (d == 0) 
+                error("divide by zero");
             left /= d; 
             t = ts.get();
             break;
@@ -409,7 +450,7 @@ void calculate()
             cout << result << statement() << "\n";
         }
         catch(runtime_error& e) {
-            cerr << e.what() << '\n';   //Write error message
+            cerr << "ERROR: " << e.what() << '\n'; //Write error message
             clean_up_mess();
         }
     }//End while
