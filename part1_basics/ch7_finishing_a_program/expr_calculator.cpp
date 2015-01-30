@@ -40,6 +40,7 @@
  *      -support for the factorial operator !
  *      -support for bracketed expressions { }
  *      -allow underscores in variable names
+ *      -create Symbol_table class to store variables
  */
 
 #include "../std_lib_facilities.h"
@@ -160,9 +161,17 @@ struct Variable {
         :name{n}, value{val} {}
 };
 
-vector<Variable> var_table; //Create vector to store variables
+class Symbol_table {
+    public:
+        double declare(string var, double val);
+        bool is_declared(string var);
+        double get(string s);
+        void set(string s, double d);
+    private:
+        vector<Variable> var_table; //Create vector to store variables
+};
 
-bool is_declared(string var)
+bool Symbol_table::is_declared(string var)
     //is var already in var_table?
 {
     for (const Variable& v : var_table) {
@@ -172,7 +181,7 @@ bool is_declared(string var)
     return false;
 }
 
-double define_name(string var, double val)
+double Symbol_table::declare(string var, double val)
     //add (var,val) to table
 {
     if(is_declared(var))
@@ -181,7 +190,7 @@ double define_name(string var, double val)
     return val;
 }
 
-double get_value(string s)
+double Symbol_table::get(string s)
     // return the value of the variable named s
 {
     for (const Variable& v : var_table) {
@@ -191,7 +200,7 @@ double get_value(string s)
     error("get: undefined variable", s);
 }
 
-void set_value(string s, double d) 
+void Symbol_table::set(string s, double d) 
     //set the Variable named s to d
 {
     for (Variable& v : var_table) {
@@ -204,6 +213,7 @@ void set_value(string s, double d)
 }
 
 Token_stream ts;        // provides get() and putback() 
+Symbol_table symtable;  // provides get() set() and declare()
 
 double expression();    // declaration so that primary() can call expression()
 
@@ -229,7 +239,7 @@ double primary()
     case number:            // we use '8' to represent a number
         return t.value;  // return the number's value
     case name:
-        return get_value(t.name);
+        return symtable.get(t.name);
     case '-':
         return -primary();
     case '+':
@@ -336,14 +346,12 @@ double declaration()
     if (t.kind != name)
         error("name expected in declaration");
     string var_name = t.name;
-    if (is_declared(var_name))
-        error(var_name, " declared twice");
     Token t2 = ts.get();
     if (t2.kind != '=')
         error("= missing in declaration of ",var_name);
 
     double d = expression();
-    var_table.push_back(Variable(var_name, d));
+    symtable.declare(var_name, d);
     return d;
 }
 
