@@ -43,6 +43,8 @@
  *      -create Symbol_table class to store variables
  *      -support for sqrt() function
  *      -support for pow() function
+ *      -reassignable variables
+ *      -user-defined and predefined constants
  */
 
 #include "../std_lib_facilities.h"
@@ -79,9 +81,11 @@ const char print = '\n';  //t.kind==print means t is a print token
 const char number = '8'; //t.kind==number means t is a number token
 const char name = 'a';  //name Token
 const char let = 'L';   //Declaration Token
+const char con = 'C';   //Constant Token
 const char root = 'S';  //Sqrt Token
 const char exponent = 'E'; //pow() Token
 const string declkey = "let";   //Declaration keyword
+const string constkey = "const"; //Constant var keyword
 const string sqrtkey = "sqrt";  //Sqrt() keyword
 const string expkey = "pow";    //pow() keyword
 
@@ -114,6 +118,8 @@ Token Token_stream::get()
         cin.putback(ch);
         if (s == declkey) {  //Declaration keyword
             return Token(let);
+        } else if (s == constkey) { //Const keyword
+           return Token(con); 
         } else if (s == sqrtkey) { //Sqrt() keyword
             return Token(root);
         } else if (s == expkey) {  //pow() keyword
@@ -192,7 +198,7 @@ struct Variable {
 
 class Symbol_table {
     public:
-        double declare(string var, double val);
+        double declare(string var, double val, bool is_const);
         bool is_declared(string var);
         double get(string s);
         void set(string s, double d);
@@ -210,12 +216,18 @@ bool Symbol_table::is_declared(string var)
     return false;
 }
 
-double Symbol_table::declare(string var, double val)
+double Symbol_table::declare(string var, double val, bool is_const)
     //add (var,val) to table
 {
     if(is_declared(var))
         error(var, "declared twice");
-    var_table.push_back(Variable(var,val));
+    if (is_const) {
+        Variable v(var, val);
+        v.readonly = true;
+        var_table.push_back(v);;
+    } else {
+        var_table.push_back(Variable(var,val));
+    }
     return val;
 }
 
@@ -226,7 +238,7 @@ double Symbol_table::get(string s)
         if (v.name == s)
             return v.value;
     }
-    error("get: undefined variable", s);
+    error("get: undefined variable ", s);
 }
 
 void Symbol_table::set(string s, double d) 
@@ -417,7 +429,7 @@ double expression()
     }
 }
 
-double declaration()
+double declaration(bool is_const)
     //Handle 'name = expression'
     //Declare a variable called "name" with initial value "expresion"
 {
@@ -430,20 +442,30 @@ double declaration()
         error("= missing in declaration of ",var_name);
 
     double d = expression();
-    if (symtable.is_declared(var_name))
-        symtable.set(var_name, d);
-    else
-        symtable.declare(var_name, d);
+    switch (is_const) {
+        case true:
+            symtable.declare(var_name, d, true);
+            break;
+        default:
+            if (symtable.is_declared(var_name))
+                symtable.set(var_name, d);
+            else
+                symtable.declare(var_name, d, false);
+    }
     return d;
 }
 
 double statement()
-    //Handle 'let' keyword
+    //Handle 'let' and 'const' keywords
 {
     Token t = ts.get();
     switch(t.kind) {
         case let:
-            return declaration();
+            return declaration(false);
+            break;
+        case con:
+            return declaration(true);
+            break;
         default:
             ts.putback(t);
             return expression();
@@ -486,6 +508,10 @@ int main()
 {
     try
     {
+        //Predefined names
+        symtable.declare("pi", 3.1415926535, true);
+        symtable.declare("e", 2.7182818284, true);
+
         calculate();
         return 0; 
     }
