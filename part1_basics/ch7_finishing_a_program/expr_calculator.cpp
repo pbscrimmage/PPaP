@@ -95,12 +95,34 @@ Token Token_stream::get()
     } 
 
     char ch;
-    ch = cin.get();    // note that >> skips whitespace (space, newline, tab, etc.)
-    while (ch == ' ')
-        ch = cin.get();
+    ch = cin.get();
+
+    while (isspace(ch)) {  //Skip whitespace, print on newline
+        if (ch == print)
+            return Token(print);
+        else
+            ch = cin.get();
+    }
+
+    if (isalpha(ch)) {    //Variables and keywords
+        if (ch == quit)
+            return Token(quit);
+        string s;
+        s += ch;
+        while (cin.get(ch) && (isalpha(ch) || isdigit(ch) || ch == '_'))
+            s += ch;
+        cin.putback(ch);
+        if (s == declkey) {  //Declaration keyword
+            return Token(let);
+        } else if (s == sqrtkey) { //Sqrt() keyword
+            return Token(root);
+        } else if (s == expkey) {  //pow() keyword
+            return Token(exponent);
+        }
+        return Token(name, s);
+    }
 
     switch (ch) {
-    case quit:
     case '{': 
     case '}': 
     case '(': 
@@ -124,25 +146,6 @@ Token Token_stream::get()
             return Token(number,val);
         }
     default:
-        if (isspace(ch)) {
-            if (ch == print)
-                return Token(print);
-        }
-        if (isalpha(ch)) {
-            string s;
-            s += ch;
-            while (cin.get(ch) && (isalpha(ch) || isdigit(ch) || ch == '_'))
-                s += ch;
-            cin.putback(ch);
-            if (s == declkey) {  //Declaration keyword
-                return Token(let);
-            } else if (s == sqrtkey) { //Sqrt() keyword
-                return Token(root);
-            } else if (s == expkey) {  //pow() keyword
-                return Token(exponent);
-            }
-            return Token(name, s);
-        }
         error("Bad token ", ch); 
     }//End switch
 }
@@ -240,6 +243,23 @@ void Symbol_table::set(string s, double d)
 Token_stream ts;        // provides get() and putback() 
 Symbol_table symtable;  // provides get() set() and declare()
 
+double power(double base, int exp)
+{
+    if (exp == 0)   //Exponent is zero
+        return 1;
+    double result = base;
+    if (exp > 0) {  //Positive exponent
+        for (int i = 1; i < exp; ++i) {
+            result *= base;
+        }
+    } else {  //Negative exponent
+        for (int i = exp; i <= -1; ++i) {
+            result /= base;
+        }
+    }
+    return result;
+} 
+
 double expression();    // declaration so that primary() can call expression()
 
 double primary()
@@ -273,19 +293,7 @@ double primary()
             t = ts.get();
             if (t.kind != ')')
                 error("')'expected");
-            if (exp == 0)   //Exponent is zero
-                return 1;
-            double result = d;
-            if (exp > 0) {  //Positive exponent
-                for (int i = 1; i < exp; ++i) {
-                    result *= d;
-                }
-            } else if (exp < 0) {  //Negative exponent
-                for (int i = exp; i <= -1; ++i) {
-                    result /= d;
-                }
-            }
-            return result;
+            return power(d, exp);
         }
     case '{':           // handle '{' expression '}'
         {
