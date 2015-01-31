@@ -185,8 +185,9 @@ void Token_stream::reset()
 struct Variable {
     string name;
     double value;
+    bool readonly;
     Variable(string n, double val) //Make a variable from (name,val)
-        :name{n}, value{val} {}
+        :name{n}, value{val}, readonly{false} {}
 };
 
 class Symbol_table {
@@ -233,6 +234,8 @@ void Symbol_table::set(string s, double d)
 {
     for (Variable& v : var_table) {
         if(v.name == s) {
+            if (v.readonly)
+                error("Cannot change const variable");
             v.value = d;
             return;
         }
@@ -427,7 +430,10 @@ double declaration()
         error("= missing in declaration of ",var_name);
 
     double d = expression();
-    symtable.declare(var_name, d);
+    if (symtable.is_declared(var_name))
+        symtable.set(var_name, d);
+    else
+        symtable.declare(var_name, d);
     return d;
 }
 
