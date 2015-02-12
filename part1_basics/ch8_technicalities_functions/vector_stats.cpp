@@ -1,3 +1,14 @@
+/**
+ * vector_stats.cpp
+ *
+ * Author: Patrick Rummage
+ *
+ * Objective:
+ *      Create a function that takes an int vector argument
+ *      and finds the smallest and largest values as well as
+ *      the median and mean. The function should return a struct
+ *      containing the results.
+ */
 #include "../std_lib_facilities.h"
 
 struct Stats {
@@ -7,7 +18,7 @@ struct Stats {
     double mean = 0;
 };
 
-Stats getStats(const vector<int>& v)
+Stats getStats(vector<int> v)
 {
     Stats vStats;
     vStats.smallest = v[0];
@@ -24,6 +35,7 @@ Stats getStats(const vector<int>& v)
     }
     vStats.mean = sum / v.size();
 
+    sort(v.begin(), v.end());
     int middle = v[v.size()/2];
     if (v.size() % 2 == 0) {
         vStats.median = (v[middle-1] + v[middle]) / 2.0;
