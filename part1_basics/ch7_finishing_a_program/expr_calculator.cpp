@@ -224,7 +224,7 @@ double Symbol_table::declare(string var, double val, bool is_const)
     if (is_const) {
         Variable v(var, val);
         v.readonly = true;
-        var_table.push_back(v);;
+        var_table.push_back(v);
     } else {
         var_table.push_back(Variable(var,val));
     }
