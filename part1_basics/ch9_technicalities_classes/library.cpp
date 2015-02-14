@@ -16,12 +16,22 @@
  *          and != operators check the equality of the ISBN 
  *          numbers for two books. Have the << operator print
  *          out the book data on seperate lines.
+ *      Part 3:
+ *          Create an enumerated type for the Book class called
+ *          Genre. Have the types be fiction, nonfiction, periodical,
+ *          biography, and children. Give each book a Genre and make
+ *          appropriate changes to the Book constructor and member
+ *          functions.
  */ 
 #include "../std_lib_facilities.h"
 
+enum Genre {
+    fiction=0, nonfiction, periodical, biography, children
+};
+
 class Book {
 public:
-    Book(string I, string t, string a, int cr);
+    Book(string I, string t, string a, int cr, Genre newG);
 
     //Nonmodifying operations
     string getISBN() {
@@ -36,12 +46,16 @@ public:
     int getCrDate() {
         return crDate;
     }
+    string getGenre() {
+        return genres[g];
+    }
 
     //Modifying operations
     void setISBN(string I);
     void setTitle(string t);
     void setAuthor(string author);
     void setCrDate(int cr);
+    void setGenre(Genre newG);
     void checkIn() {
         checkedOut = false;
     }
@@ -53,17 +67,20 @@ private:
     string title;
     string author;
     int crDate;
+    Genre g;
+    vector<string> genres{"fiction","nonfiction","periodical",
+                            "biography","children"};
     bool checkedOut;
     bool isValidISBN(string ISBN);
 };
 
-Book::Book(string I, string t, string a, int cr)
+Book::Book(string I, string t, string a, int cr, Genre newG)
 {   
-    setISBN(I);
+   setISBN(I);
     setTitle(t);
     setAuthor(a);
     setCrDate(cr);
-
+    setGenre(newG);
 }
 
 void Book::setISBN(string I)
@@ -76,7 +93,6 @@ void Book::setISBN(string I)
 
 bool Book::isValidISBN(string I)
 {
-    //Validate ISBN is in format n-n-n-x where each n 
     //is an integer and x is a letter or digit.
     for (int i = 1; i <= 3; ++i) {
         int seperator = I.find_first_of('-');
@@ -117,12 +133,18 @@ void Book::setCrDate(int cr)
         error("invalid copyright date");
 }
 
+void Book::setGenre(Genre newG)
+{
+    g = newG;
+}
+
 ostream& operator<<(ostream& os, Book b)
 {
     return os << "ISBN: " << b.getISBN() << '\n'
         << "Title: " << b.getTitle() << '\n'
         << "Author: " << b.getAuthor() << '\n'
-        << "Copyright: " << b.getCrDate() << '\n';
+        << "Copyright: " << b.getCrDate() << '\n'
+        << "Genre: " << b.getGenre() << '\n';
 }
 
 bool operator==(Book b1, Book b2)
@@ -145,8 +167,17 @@ int main()
 {
     try
     {
-        Book goodBook{"1234-865-4839-a","My System","Nimzowitsch",1925};
-        Book badBook{"0-0-0-z","My Life","Patrick Rummage",2016};
+        Book goodBook{"1234-865-4839-a",
+            "My System",
+            "Nimzowitsch",
+            1925, 
+            nonfiction};
+
+        Book badBook{"0-0-0-z",
+            "My Life",
+            "Patrick Rummage",
+            2016, 
+            biography};
 
         cout << goodBook;
         bool compare = goodBook==badBook; 
