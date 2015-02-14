@@ -22,6 +22,13 @@
  *          biography, and children. Give each book a Genre and make
  *          appropriate changes to the Book constructor and member
  *          functions.
+ *      Part 4:
+ *          Create a Patron class for the library. The class will
+ *          have a user's name, library card number, and library
+ *          fees(if owed). Have functions that access this data,
+ *          as well as a function to set the fee of the user. Make
+ *          a helper function that returns a bool depending on 
+ *          whether or not the user owes a fee.
  */ 
 #include "../std_lib_facilities.h"
 
@@ -76,11 +83,12 @@ private:
 
 Book::Book(string I, string t, string a, int cr, Genre newG)
 {   
-   setISBN(I);
+    setISBN(I);
     setTitle(t);
     setAuthor(a);
     setCrDate(cr);
     setGenre(newG);
+    checkIn();
 }
 
 void Book::setISBN(string I)
@@ -163,6 +171,67 @@ bool operator!=(Book b1, Book b2)
         return false;
 }
 
+class Patron {
+public:
+    Patron(string s, int n, int f);
+    //Modifying operations
+    string getName()
+        { return name; }
+    int getCardNum()
+        { return cardNum; }
+    int getFees()
+        { return fees; }
+    bool owesFee();
+
+    //Modifying operations
+    void setName(string s);
+    void setCardNum(int n);
+    void setFees(int f);
+private:
+    string name;
+    int cardNum;
+    int fees;
+};
+
+Patron::Patron(string s, int n, int f)
+{
+    setName(s);
+    setCardNum(n);
+    setFees(f);
+}
+
+void Patron::setName(string s)
+{
+    if (s.size() > 0)
+        name = s;
+    else
+        error("invalid name");
+}
+
+void Patron::setCardNum(int n)
+{
+    if (n > 0)
+        cardNum = n;
+    else
+        error("invalid card number");
+}
+
+void Patron::setFees(int f)
+{
+    if (f >= 0)
+        fees = f;
+    else
+        error("invalid fee");
+}
+
+bool Patron::owesFee()
+{
+    if (fees > 0)
+        return true;
+    else
+        return false;
+}
+
 int main()
 {
     try
@@ -182,6 +251,10 @@ int main()
         cout << goodBook;
         bool compare = goodBook==badBook; 
         cout << compare << '\n';
+        
+        Patron me{"Patrick",1,999};
+        if (me.owesFee())
+            cout << me.getName() << " owes: " << me.getFees() << '\n';
     }
     catch (exception& e) {
         cerr << "ERROR: " << e.what() << '\n'; 
