@@ -25,24 +25,26 @@ class Rational {
             {denominator = d; }
         double toReal()           // conversion to double
             {return numerator / denominator; }
+        /** OPERATORS **/
+        void operator=(Rational r2)     //Assignment
+            {numerator = r2.getn(); denominator = r2.getd();}
+        Rational operator+(Rational r2); //Addition
+        Rational operator-(Rational r2); //Subtraction
+        Rational operator*(Rational r2); //Multiplication
+        Rational operator/(Rational r2); //Division
+        bool operator==(Rational r2); //Equality
 
     private:
         int numerator;
         int denominator;
 };
 
-/* Assignment operator 
-void operator=(Rational r1, Rational r2) {
-    r1.setn(r2.getn());
-    r1.setd(r2.getd());
-}
-*/
 
 /* Addition operator */
-Rational operator+(Rational r1, Rational r2) {
+Rational Rational::operator+(Rational r2) {
     // Common Denominator-ize
-    Rational newR1{r1.getn() * r2.getd(), r1.getd() * r2.getd()};
-    Rational newR2{r2.getn() * r1.getd(), r2.getd() * r1.getd()};
+    Rational newR1{this->getn() * r2.getd(), this->getd() * r2.getd()};
+    Rational newR2{r2.getn() * this->getd(), r2.getd() * this->getd()};
 
     // Add
     Rational result{newR1.getn() + newR2.getn(), newR2.getd()};
@@ -50,10 +52,10 @@ Rational operator+(Rational r1, Rational r2) {
 }
 
 /* Subtraction operator */
-Rational operator-(Rational r1, Rational r2) {
+Rational Rational::operator-(Rational r2) {
     // Common Denominator-ize
-    Rational newR1{r1.getn() * r2.getd(), r1.getd() * r2.getd()};
-    Rational newR2{r2.getn() * r1.getd(), r2.getd() * r1.getd()};
+    Rational newR1{this->getn() * r2.getd(), this->getd() * r2.getd()};
+    Rational newR2{r2.getn() * this->getd(), r2.getd() * this->getd()};
 
     // Subtract
     Rational result{newR1.getn() - newR2.getn(), newR2.getd()};
@@ -61,26 +63,32 @@ Rational operator-(Rational r1, Rational r2) {
 }
 
 /* Multiplication operator */
-Rational operator*(Rational r1, Rational r2) {
-    int num = r1.getn() * r2.getn();
-    int denom = r1.getd() * r2.getd();
+Rational Rational::operator*(Rational r2) {
+    int num = this->getn() * r2.getn();
+    int denom = this->getd() * r2.getd();
 
     Rational result{num, denom};
     return result;
 }
 
 /* Division operator */
-Rational operator/(Rational r1, Rational r2) {
+Rational Rational::operator/(Rational r2) {
+    Rational left{this->getn(), this->getd()};
     Rational flipped{r2.getd(), r2.getn()};
-    return r1 * flipped;
+    return  left * flipped;
 }
 
 /* Equality operator */
-bool operator==(Rational r1, Rational r2) {
-    double real1 = r1.getn() / r1.getd();
+bool Rational::operator==(Rational r2) {
+    double real1 = this->getn() / this->getd();
     double real2 = r2.getn() / r2.getd();
 
     return real1 == real2;
+}
+
+ostream& operator<<(ostream& os, Rational r) 
+{
+    return os << r.getn() << "/" << r.getd();
 }
 
 int main() {
@@ -92,10 +100,10 @@ int main() {
     Rational mult = r1 * r2;
     Rational div = r1 / r2;
 
-    cout << "Result for 2/5 + 3/4: " << add.getn() << "/" << add.getd() << "\n";
-    cout << "Result for 2/5 - 3/4: " << sub.getn() << "/" << sub.getd() << "\n";
-    cout << "Result for 2/5 * 3/4: " << mult.getn() << "/" << mult.getd() << "\n";
-    cout << "Result for 2/5 / 3/4: " << div.getn() << "/" << div.getd() << "\n";
+    cout << "Result for 2/5 + 3/4: " << add << "\n";
+    cout << "Result for 2/5 - 3/4: " << sub << "\n";
+    cout << "Result for 2/5 * 3/4: " << mult << "\n";
+    cout << "Result for 2/5 / 3/4: " << div << "\n";
 
     return 0;
 }
