@@ -34,14 +34,18 @@ class Rational {
         Rational operator/(Rational r2); //Division
         bool operator==(Rational r2); //Equality
 
+        Rational reduce(); // return the simplified ratio
+
     private:
         int numerator;
         int denominator;
+        int findGcd();      // find greatest common divisor
 };
 
 
 /* Addition operator */
-Rational Rational::operator+(Rational r2) {
+Rational Rational::operator+(Rational r2) 
+{
     // Common Denominator-ize
     Rational newR1{this->getn() * r2.getd(), this->getd() * r2.getd()};
     Rational newR2{r2.getn() * this->getd(), r2.getd() * this->getd()};
@@ -52,7 +56,8 @@ Rational Rational::operator+(Rational r2) {
 }
 
 /* Subtraction operator */
-Rational Rational::operator-(Rational r2) {
+Rational Rational::operator-(Rational r2) 
+{
     // Common Denominator-ize
     Rational newR1{this->getn() * r2.getd(), this->getd() * r2.getd()};
     Rational newR2{r2.getn() * this->getd(), r2.getd() * this->getd()};
@@ -63,7 +68,8 @@ Rational Rational::operator-(Rational r2) {
 }
 
 /* Multiplication operator */
-Rational Rational::operator*(Rational r2) {
+Rational Rational::operator*(Rational r2) 
+{
     int num = this->getn() * r2.getn();
     int denom = this->getd() * r2.getd();
 
@@ -72,18 +78,50 @@ Rational Rational::operator*(Rational r2) {
 }
 
 /* Division operator */
-Rational Rational::operator/(Rational r2) {
+Rational Rational::operator/(Rational r2) 
+{
     Rational left{this->getn(), this->getd()};
     Rational flipped{r2.getd(), r2.getn()};
     return  left * flipped;
 }
 
 /* Equality operator */
-bool Rational::operator==(Rational r2) {
+bool Rational::operator==(Rational r2) 
+{
     double real1 = this->getn() / this->getd();
     double real2 = r2.getn() / r2.getd();
 
     return real1 == real2;
+}
+
+int Rational::findGcd()
+    // Uses Euclid's algorithm for finding gcd
+{
+    int num = numerator;
+    int denom = denominator;
+    int remainder = std::max(num,denom) % std::min(num,denom);
+    if (remainder == 0) {
+        return std::min(num, denom);
+    }
+    while (remainder != 0) {
+        num = denom;
+        denom = remainder;
+        remainder = num % denom;
+    }
+    return remainder;
+}
+
+Rational Rational::reduce()
+{
+    int n = numerator;
+    int d = denominator;
+    int gcd = findGcd();
+
+    n = numerator / gcd;
+    d = denominator / gcd;
+
+    Rational reduced{n, d};
+    return reduced;
 }
 
 ostream& operator<<(ostream& os, Rational r) 
@@ -91,9 +129,11 @@ ostream& operator<<(ostream& os, Rational r)
     return os << r.getn() << "/" << r.getd();
 }
 
-int main() {
+int main() 
+{
     Rational r1{2,5};
     Rational r2{3,4};
+    Rational r3{5,25};
 
     Rational add = r1 + r2;
     Rational sub = r1 - r2;
@@ -112,6 +152,7 @@ int main() {
         cout << "False" << "\n";
     }
     cout << r2 << " in decimal form: " << r2.toReal() << "\n";
+    cout << r3 << " reduced: " << r3.reduce() << "\n";
 
     return 0;
 }
