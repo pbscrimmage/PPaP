@@ -24,7 +24,7 @@ class Rational {
         void setd(int d)        // set denominator
             {denominator = d; }
         double toReal()           // conversion to double
-            {return numerator / denominator; }
+            {return (double)numerator / denominator; }
         /** OPERATORS **/
         void operator=(Rational r2)     //Assignment
             {numerator = r2.getn(); denominator = r2.getd();}
@@ -99,11 +99,19 @@ int main() {
     Rational sub = r1 - r2;
     Rational mult = r1 * r2;
     Rational div = r1 / r2;
+    bool equalityTest = Rational{5,8} == Rational{10,16};
 
     cout << "Result for 2/5 + 3/4: " << add << "\n";
     cout << "Result for 2/5 - 3/4: " << sub << "\n";
     cout << "Result for 2/5 * 3/4: " << mult << "\n";
     cout << "Result for 2/5 / 3/4: " << div << "\n";
+    cout << "Equality Test: ";
+    if (equalityTest) {
+        cout << "True" << "\n";
+    } else {
+        cout << "False" << "\n";
+    }
+    cout << r2 << " in decimal form: " << r2.toReal() << "\n";
 
     return 0;
 }
