@@ -22,6 +22,8 @@ class Money {
             :amt{newAmt} {};
         long int getAmt()
             {return amt; }
+        void setAmt(long int newAmt)
+            {amt = newAmt; }
 
         bool operator=(Money m2) // Assignment operator
             {amt = m2.getAmt(); }
@@ -46,17 +48,17 @@ Money operator-(Money m1, Money m2)
 }
 
 /* MULTIPLICATION */
-Money operator*(Money m1, Money m2)
+double operator*(Money m1, double num)
 {
-    Money result{m1.getAmt() * m2.getAmt()};
+    double result = m1.getAmt() * num;
 
     return result;
 }
 
 /* DIVISION */
-Money operator/(Money m1, Money m2)
+double operator/(Money m1, double num)
 {
-    Money result{m1.getAmt() / m2.getAmt()};
+    double result = m1.getAmt() / num;
 
     return result;
 }
@@ -64,23 +66,45 @@ Money operator/(Money m1, Money m2)
 /* EQUALITY */
 bool operator==(Money m1, Money m2)
 {
-    return m1.getAmt() == Money m2.getAmt();
+    return m1.getAmt() == m2.getAmt();
+}
+
+/* OUTPUT */
+ostream& operator<<(ostream& os, Money m)
+{
+    return os << m.getAmt() / 100 << "." << m.getAmt() % 100;
+}
+
+/* INPUT */
+istream& operator>>(istream& is, Money& m)
+{
+    double dollars;
+    is >> dollars;
+
+    long int cents = narrow_cast<long int>(dollars * 100);
+    m.setAmt(cents);
 }
 
 int main()
 {
-    Money fiDolla{500};
-    Money tuDolla{200};
+    Money fiDolla{5000};
+    Money tuDolla{2000};
+    double d = 2.3;
 
     Money addDolla = fiDolla + tuDolla;
     Money subDolla = fiDolla - tuDolla;
-    Money multDolla = fiDolla * tuDolla;
-    Money divDolla = fiDolla / tuDolla;
+    double multDolla = fiDolla * d;
+    double divDolla = fiDolla / d;
 
-    cout << "Addition: " << addDolla.getAmt() << "\n";
-    cout << "Subtraction: " << subDolla.getAmt() << "\n";
-    cout << "Multiplication: " << multDolla.getAmt() << "\n";
-    cout << "Division: " << divDolla.getAmt() << "\n";
+    cout << "Addition: " << addDolla << "\n";
+    cout << "Subtraction: " << subDolla << "\n";
+    cout << "Multiplication: " << multDolla << "\n";
+    cout << "Division: " << divDolla << "\n";
+
+    Money mIn;
+    cout << "Input an amout in USD: " << "\n";
+    cin >> mIn;
+    cout << "Amout in Money object: " << mIn << "\n";
 
     return 0;
 }
