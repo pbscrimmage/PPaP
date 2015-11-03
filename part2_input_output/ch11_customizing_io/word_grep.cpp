@@ -23,7 +23,7 @@ void search_file(const string& filename, string s, vector<string>& matches) {
         stringstream ss {line};
         while (ss >> word) {
             if (word == s) {
-                matches.putback(to_string(ln_count) + ": " + line); 
+                matches.push_back(to_string(ln_count) + ": " + line); 
             }
         }
     }
@@ -36,6 +36,7 @@ void print_lines(const vector<string>& lines) {
         for (string l : lines) {
             cout << l << "\n";
         }
+    }
 }
 
 int main(int argc, char* argv[]) {
