@@ -17,7 +17,7 @@ void search_file(const string& filename, string s, vector<string>& matches) {
     }
 
     string line;
-    int ln_count = 0;
+    int ln_count = 1;
     while (getline(ifs, line)) {
         string word;
         stringstream ss {line};
@@ -26,6 +26,7 @@ void search_file(const string& filename, string s, vector<string>& matches) {
                 matches.push_back(to_string(ln_count) + ": " + line); 
             }
         }
+        ln_count++;
     }
 }
 
@@ -40,8 +41,8 @@ void print_lines(const vector<string>& lines) {
 }
 
 int main(int argc, char* argv[]) {
-    string fname = argv[0];
-    string query = argv[1];    
+    string fname = argv[1];
+    string query = argv[2];    
 
     vector<string> results;
 
